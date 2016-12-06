@@ -118,4 +118,37 @@
         (for/list ([xyz matrix]) (dotProduct xyz rxyz))
     ))
 
-(axisRotation '((1 1 0 1)(3 3 0 1)(0 0 0 1)) 0 0 1)
+;;;(axisRotation '((1 1 0 1)(3 3 0 1)(0 0 0 1)) 0 0 1)
+
+(define (translationMatrix matrix dx dy dz) ; Moves object around
+  (let ([tm (list (list 1 0 0 dx)
+                  (list 0 1 0 dy)
+                  (list 0 0 1 dz)
+                  (list 0 0 0 1 ))])
+    (for/list ([xyz matrix])(dotProduct xyz tm))))
+
+;;;(translationMatrix '((2 2 2 1)(3 3 3 1)) 1 2 3)
+
+(define (wDivide matrix) ; Makes the magic 3D effect come to life!
+  (for/list ([point matrix])
+    (list (/(list-ref point 0)(list-ref point 3))
+          (/(list-ref point 1)(list-ref point 3))
+          (/(list-ref point 2)(list-ref point 3))
+          (/(list-ref point 3)(list-ref point 3)))
+    ))
+
+;;;(wDivide '((2 3 4 0.5)(2 3 4 0.2)))
+
+(define (projectionMatrix d dx dy dz rx ry rz matrix) ;  d = angle of view, xyz position, xyz rotation, world. 
+  (let* ([PM (list (list 1 0 0 0)
+                   (list 0 1 0 0)
+                   (list 0 0 1 0)
+                   (list 0 0 (/ 1 d) 0))]
+         [MatrixT (translationMatrix matrix (* -1 dx) (* -1 dy) (* -1 dz))]
+         [MatrixTR (axisRotation MatrixT rx ry rz)]
+         [cam (for/list ([xyz MatrixTR]) (dotProduct xyz PM))]
+         [camc (for/list ([point cam] #:when (> (list-ref point 2) 0)) point )]
+         )
+    (if (> (length camc) 0) (wDivide camc) camc)))
+
+;;;(projectionMatrix 50 1 2 3 0 0 0 '((1 2 1 1)(7 8 9 1)(4 5 6 1)))
