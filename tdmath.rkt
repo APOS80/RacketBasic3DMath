@@ -1,6 +1,6 @@
 ;#lang racket
 
-(require math)
+;(require math)
 
 (define (vectorCrossProduct vec_one vec_two) ; Crossproduct of two vectors
   (let(
